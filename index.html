@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="./styles.css">
+<script src="./image-slot.js"></script>
+<script src="./games-data.js"></script>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#5980a6"></rect><g fill="none" stroke="#f2f2f3" stroke-width="3"><rect x="30" y="34" width="14" height="26"></rect><rect x="47" y="30" width="12" height="30"></rect><rect x="62" y="40" width="10" height="20"></rect><path d="M26 62h50"></path></g></svg></template>
+<style>
+body{margin:0;background:var(--color-bg);}
+a{color:var(--color-accent-700);}
+a:hover{color:var(--color-accent-900);}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes settle{0%{transform:translateY(-26px)}60%{transform:translateY(2px)}100%{transform:none}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);">
+
+<sc-if value="{{ isShelf }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:1240px;margin:0 auto;padding:var(--space-6) var(--space-6) 64px;display:flex;flex-direction:column;gap:var(--space-6);">
+
+  <header style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--space-4);justify-content:space-between;">
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent-700);">Coleção de Damis e Renan</div>
+      <h1 style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:48px;line-height:1;letter-spacing:-0.02em;">Minha Estante</h1>
+      <div style="font-size:14px;color:var(--color-neutral-700);">{{ countLine }}</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;">
+      <div class="seg">
+        <label class="seg-opt"><input type="radio" name="tab" checked="{{ tabCol }}" onChange="{{ toCol }}">Coleção</label>
+        <label class="seg-opt"><input type="radio" name="tab" checked="{{ tabWish }}" onChange="{{ toWish }}">Lista de desejos · {{ wishCount }}</label>
+      </div>
+    </div>
+  </header>
+
+  <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;">
+    <div style="position:relative;flex:1 1 260px;max-width:420px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="position:absolute;left:10px;top:10px;color:var(--color-neutral-600);"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <input class="input" type="search" placeholder="Buscar por nome, designer ou gênero" value="{{ q }}" onChange="{{ onQ }}" style="padding-left:34px;">
+    </div>
+    <select class="input" value="{{ genre }}" onChange="{{ onGenre }}" style="flex:0 1 220px;width:auto;">
+      <sc-for list="{{ genreOptions }}" as="o" hint-placeholder-count="1"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+    </select>
+    <div style="display:flex;align-items:center;gap:var(--space-2);margin-left:auto;">
+      <span style="font-size:12px;color:var(--color-neutral-700);">Ordenar</span>
+      <div class="seg">
+        <label class="seg-opt"><input type="radio" name="sort" checked="{{ sortIsNome }}" onChange="{{ sortNome }}">Nome</label>
+        <label class="seg-opt"><input type="radio" name="sort" checked="{{ sortIsNota }}" onChange="{{ sortNota }}">Nota</label>
+        <label class="seg-opt"><input type="radio" name="sort" checked="{{ sortIsJog }}" onChange="{{ sortJog }}">Jogadores</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="blueprint" ref="{{ shelfRef }}" style="padding:0 14px;">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div style="border-left:1px solid var(--color-divider);border-right:1px solid var(--color-divider);">
+      <sc-for list="{{ rows }}" as="row" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;">
+          <div style="display:flex;align-items:flex-end;gap:14px;padding:32px 20px 0;min-height:60px;">
+            <sc-for list="{{ row.items }}" as="it" hint-placeholder-count="6">
+              <div style="position:relative;flex:none;width:{{ it.wpx }}px;height:{{ it.hpx }}px;opacity:{{ it.op }};animation:{{ it.anim }};transition:transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms;background:var(--color-surface);border:1px solid var(--color-neutral-400);box-shadow:4px 0 0 -1px var(--color-neutral-300), var(--shadow-sm);" style-hover="transform:translateY(-8px) rotate(-1deg);box-shadow:4px 0 0 -1px var(--color-neutral-300), var(--shadow-md);">
+                <image-slot id="{{ it.slotId }}" src="{{ it.cover }}" shape="rect" placeholder="{{ it.title }}" style="position:absolute;inset:0;width:100%;height:100%;"></image-slot>
+                <button aria-label="{{ it.title }}" title="{{ it.title }}" onClick="{{ it.open }}" style="position:absolute;inset:0;border:0;padding:0;background:transparent;cursor:pointer;pointer-events:{{ overlayPE }};"></button>
+                <sc-if value="{{ it.isExp }}"><div style="position:absolute;top:4px;left:4px;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;background:var(--color-accent-900);color:var(--color-bg);padding:1px 5px;pointer-events:none;">Exp.</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:14px;padding:4px 20px;height:26px;border-top:1px solid var(--color-neutral-500);border-bottom:1px solid var(--color-divider);background:repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--color-text) 7%, transparent) 6px 7px);">
+            <sc-for list="{{ row.items }}" as="it" hint-placeholder-count="6">
+              <div style="flex:none;width:{{ it.wpx }}px;display:flex;justify-content:center;">
+                <div style="max-width:100%;padding:1px 6px;background:var(--color-bg);border:1px solid var(--color-divider);font-family:var(--font-heading);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ it.short }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ isEmpty }}">
+        <div style="padding:64px 24px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;">
+          <div style="font-family:var(--font-heading);font-size:24px;font-weight:600;">{{ emptyTitle }}</div>
+          <div style="font-size:14px;color:var(--color-neutral-700);max-width:44ch;text-wrap:pretty;">{{ emptyText }}</div>
+        </div>
+      </sc-if>
+      <div style="height:18px;"></div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--color-neutral-700);">Arraste uma imagem sobre qualquer caixa (aqui ou na ficha do jogo) para colocar a capa.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+<div style="max-width:1180px;margin:0 auto;padding:var(--space-6) var(--space-6) 80px;display:flex;flex-direction:column;gap:var(--space-8);">
+  <div style="display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center;animation:rise 500ms both;">
+    <button class="btn btn-ghost" onClick="{{ goBack }}" style="margin-right:auto;font-size:15px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"></path></svg>Voltar à estante</button>
+    <sc-if value="{{ d.wish }}"><button class="btn btn-secondary" onClick="{{ moveToCol }}">Mover para a coleção</button></sc-if>
+    <a class="btn btn-ghost" href="{{ d.ludoHref }}" target="_blank" rel="noopener" style="text-decoration:none;">Buscar no Ludopedia
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></a>
+    <button class="btn btn-secondary" onClick="{{ openEdit }}">Editar</button>
+    <button class="btn btn-secondary" onClick="{{ removeGame }}">Remover</button>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:var(--space-8);align-items:flex-start;">
+    <div class="blueprint" style="flex:1 1 280px;max-width:420px;aspect-ratio:{{ d.aspect }};background:var(--color-surface);animation:rise 600ms 60ms both;">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <image-slot id="{{ d.slotId }}" src="{{ d.cover }}" shape="rect" placeholder="{{ d.dropText }}" style="position:absolute;inset:0;width:100%;height:100%;"></image-slot>
+    </div>
+
+    <div style="flex:2 1 420px;min-width:0;display:flex;flex-direction:column;gap:var(--space-6);">
+      <div style="display:flex;flex-direction:column;gap:var(--space-3);animation:rise 600ms 120ms both;">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <sc-if value="{{ d.isExp }}"><span class="tag" style="background:var(--color-accent-900);color:var(--color-bg);">Expansão</span></sc-if>
+          <sc-if value="{{ d.wish }}"><span class="tag tag-outline">Lista de desejos</span></sc-if>
+          <sc-for list="{{ d.genres }}" as="gn" hint-placeholder-count="3"><span class="tag tag-accent">{{ gn }}</span></sc-for>
+        </div>
+        <h1 style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:clamp(36px,5vw,60px);line-height:0.98;letter-spacing:-0.02em;text-wrap:balance;">{{ d.title }}</h1>
+        <div style="font-size:15px;color:var(--color-neutral-700);">{{ d.byline }}</div>
+        <sc-if value="{{ d.hasBase }}"><div style="font-size:14px;">Expansão de <a href="{{ d.baseHref }}" style="font-weight:500;">{{ d.baseTitle }}</a></div></sc-if>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border-top:1px solid var(--color-divider);border-left:1px solid var(--color-divider);animation:rise 600ms 180ms both;">
+        <div style="padding:var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;flex-direction:column;gap:2px;">
+          <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);">Nota Ludopedia</div>
+          <div style="display:flex;align-items:baseline;gap:4px;"><span style="font-family:var(--font-heading);font-weight:600;font-size:52px;line-height:1;color:var(--color-accent-700);">{{ d.rating }}</span><span style="font-size:14px;color:var(--color-neutral-700);">/ 10</span></div>
+        </div>
+        <div style="padding:var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;flex-direction:column;gap:2px;">
+          <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-neutral-700);">Jogadores</div>
+          <div style="font-family:var(--font-heading);font-weight:600;font-size:30px;line-height:1.2;">{{ d.players }}</div>
+        </div>
+        <div style="padding:var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;flex-direction:column;gap:2px;">
+          <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-neutral-700);">Duração</div>
+          <div style="font-family:var(--font-heading);font-weight:600;font-size:30px;line-height:1.2;">{{ d.time }}</div>
+        </div>
+        <div style="padding:var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;flex-direction:column;gap:2px;">
+          <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-neutral-700);">Ano</div>
+          <div style="font-family:var(--font-heading);font-weight:600;font-size:30px;line-height:1.2;">{{ d.year }}</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--space-2);animation:rise 600ms 240ms both;">
+        <h2 style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:24px;">Sinopse</h2>
+        <p style="margin:0;font-size:17px;line-height:1.6;max-width:64ch;text-wrap:pretty;">{{ d.synopsis }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="blueprint" style="padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-6);animation:rise 600ms 300ms both;">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;">
+      <h2 style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:32px;">Regras resumidas</h2>
+      <span style="font-size:12px;color:var(--color-neutral-700);">Consulte o manual para casos especiais</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:var(--space-6);">
+      <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+        <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);">01 · Objetivo</div>
+        <p style="margin:0;font-size:15px;text-wrap:pretty;">{{ d.objetivo }}</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+        <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);">02 · Turno</div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+          <sc-for list="{{ d.turno }}" as="st" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:28px 1fr;gap:6px;font-size:15px;text-wrap:pretty;">
+              <span style="font-family:var(--font-heading);font-weight:600;color:var(--color-accent-700);">{{ st.n }}</span><span>{{ st.text }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+        <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);">03 · Fim de jogo</div>
+        <p style="margin:0;font-size:15px;text-wrap:pretty;">{{ d.fim }}</p>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ d.hasExps }}">
+    <div style="display:flex;flex-direction:column;gap:var(--space-3);animation:rise 600ms 360ms both;">
+      <h2 style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:24px;">Expansões na coleção</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);">
+        <sc-for list="{{ d.exps }}" as="ex" hint-placeholder-count="1">
+          <a href="{{ ex.href }}" class="btn btn-secondary" style="text-decoration:none;font-size:15px;">{{ ex.title }}<span style="color:var(--color-accent-700);">{{ ex.rating }}</span></a>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ hasDialog }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop" onClick="{{ closeDialogBg }}" style="z-index:60;overflow:auto;align-items:start;padding:40px 16px;">
+    <div class="dialog blueprint" style="width:min(640px,100%);background:var(--color-bg);gap:var(--space-4);">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div class="dialog-title" style="font-size:26px;">{{ dialogTitle }}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:var(--space-3);">
+        <div class="field" style="grid-column:1/-1;"><label>Nome do jogo</label><input class="input" data-field="title" value="{{ form.title }}" onChange="{{ onField }}"></div>
+        <div class="field" style="grid-column:1/-1;"><label>Capa: endereço da imagem ou ID do jogo no Ludopedia</label><input class="input" placeholder="https://storage.googleapis.com/ludopedia-capas/1234_m.jpg  ou  1234" data-field="cover" value="{{ form.cover }}" onChange="{{ onField }}"><span style="font-size:12px;color:var(--color-neutral-700);">No Ludopedia, clique com o botão direito na capa e escolha “Copiar endereço da imagem”.</span></div>
+        <div class="field"><label>Tipo</label><select class="input" data-field="kind" value="{{ form.kind }}" onChange="{{ onField }}"><option value="base">Jogo base</option><option value="expansao">Expansão</option></select></div>
+        <div class="field"><label>Guardar em</label><select class="input" data-field="dest" value="{{ form.dest }}" onChange="{{ onField }}"><option value="colecao">Coleção</option><option value="desejos">Lista de desejos</option></select></div>
+        <div class="field"><label>Nota Ludopedia</label><input class="input" type="number" step="0.1" min="0" max="10" data-field="rating" value="{{ form.rating }}" onChange="{{ onField }}"></div>
+        <div class="field" style="grid-column:1/-1;"><label>Gêneros (separados por vírgula)</label><input class="input" data-field="genres" value="{{ form.genres }}" onChange="{{ onField }}"></div>
+        <div class="field"><label>Jogadores mín.</label><input class="input" type="number" data-field="minP" value="{{ form.minP }}" onChange="{{ onField }}"></div>
+        <div class="field"><label>Jogadores máx.</label><input class="input" type="number" data-field="maxP" value="{{ form.maxP }}" onChange="{{ onField }}"></div>
+        <div class="field"><label>Duração</label><input class="input" placeholder="45–60 min" data-field="time" value="{{ form.time }}" onChange="{{ onField }}"></div>
+        <div class="field"><label>Ano</label><input class="input" type="number" data-field="year" value="{{ form.year }}" onChange="{{ onField }}"></div>
+        <div class="field"><label>Designer</label><input class="input" data-field="designer" value="{{ form.designer }}" onChange="{{ onField }}"></div>
+        <div class="field"><label>Editora</label><input class="input" data-field="publisher" value="{{ form.publisher }}" onChange="{{ onField }}"></div>
+        <div class="field" style="grid-column:1/-1;"><label>Sinopse</label><textarea class="input" data-field="synopsis" value="{{ form.synopsis }}" onChange="{{ onField }}"></textarea></div>
+        <div class="field" style="grid-column:1/-1;"><label>Regras · Objetivo</label><input class="input" data-field="objetivo" value="{{ form.objetivo }}" onChange="{{ onField }}"></div>
+        <div class="field" style="grid-column:1/-1;"><label>Regras · Turno (um passo por linha)</label><textarea class="input" data-field="turno" value="{{ form.turno }}" onChange="{{ onField }}"></textarea></div>
+        <div class="field" style="grid-column:1/-1;"><label>Regras · Fim de jogo</label><input class="input" data-field="fim" value="{{ form.fim }}" onChange="{{ onField }}"></div>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeDialog }}">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveDialog }}" disabled="{{ cantSave }}">Salvar</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+{{ animEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('estante-bg-v1') || 'null'); } catch (e) {}
+    const base = window.BG_DATA || [];
+    if (saved) saved = saved.map(g => { const b = base.find(x => x.id === g.id); if (!b) return g; if (g.id === 'dinofun' && g.designer === '—') return { ...b, wish: g.wish }; return b.cover && !g.cover ? { ...g, cover: b.cover } : g; });
+    this.state = { games: saved || base, view: 'shelf', currentId: null, tab: 'colecao', q: '', genre: '', sort: 'nome', width: 1100, anim: null, hiddenId: null, settleId: null, dragging: false, dialog: null };
+    this.shelfRef = React.createRef();
+    this.timers = [];
+  }
+  componentDidMount() {
+    if (!this.state.games.length) {
+      const wait = setInterval(() => { if (window.BG_DATA) { clearInterval(wait); this.setState({ games: window.BG_DATA }); } }, 50);
+      this.timers.push(wait);
+    }
+    this.onHash = () => this.applyHash();
+    window.addEventListener('hashchange', this.onHash);
+    this.onResize = () => this.measure();
+    window.addEventListener('resize', this.onResize);
+    this.onDragEnter = (e) => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) this.setState({ dragging: true }); };
+    this.onDragEnd = (e) => { if (e.type !== 'dragleave' || (!e.relatedTarget && e.clientX <= 0 || e.clientY <= 0 || e.clientX >= innerWidth || e.clientY >= innerHeight)) this.setState({ dragging: false }); };
+    window.addEventListener('dragenter', this.onDragEnter);
+    ['drop', 'dragend', 'dragleave'].forEach(t => window.addEventListener(t, this.onDragEnd));
+    this.applyHash();
+    this.measure();
+    requestAnimationFrame(() => this.measure());
+    [100, 300, 800, 1500, 3000].forEach(t => this.timers.push(setTimeout(() => this.measure(), t)));
+  }
+  componentWillUnmount() {
+    window.removeEventListener('hashchange', this.onHash);
+    window.removeEventListener('resize', this.onResize);
+    if (this.ro) this.ro.disconnect();
+    window.removeEventListener('dragenter', this.onDragEnter);
+    ['drop', 'dragend', 'dragleave'].forEach(t => window.removeEventListener(t, this.onDragEnd));
+    this.timers.forEach(t => { clearTimeout(t); clearInterval(t); });
+  }
+  componentDidUpdate() { this.measure(); if (this.state.view === 'shelf' && this._lastView !== 'shelf') [50, 300].forEach(t => this.timers.push(setTimeout(() => this.measure(), t))); this._lastView = this.state.view; }
+  measure() {
+    const el = this.shelfRef.current;
+    if (el !== this.observed) {
+      if (this.ro) this.ro.disconnect();
+      this.observed = el;
+      if (el && window.ResizeObserver) { this.ro = new ResizeObserver((en) => { const w = en[0] && en[0].contentRect.width; if (w && Math.abs(w + 28 - this.state.width) > 2) this.setState({ width: el.clientWidth }); }); this.ro.observe(el); }
+    }
+    if (el && Math.abs(el.clientWidth - this.state.width) > 2) this.setState({ width: el.clientWidth });
+  }
+  save(games) {
+    try { localStorage.setItem('estante-bg-v1', JSON.stringify(games)); } catch (e) {}
+    this.setState({ games });
+  }
+  applyHash() {
+    const m = location.hash.match(/^#\/jogo\/(.+)$/);
+    if (m && this.state.games.some(g => g.id === m[1]) || (m && !this.state.games.length)) {
+      if (this.state.view !== 'detail' || this.state.currentId !== m[1]) {
+        this.setState({ view: 'detail', currentId: m[1] }); window.scrollTo(0, 0);
+      }
+    } else if (this.state.view === 'detail') {
+      this.back();
+    }
+  }
+  back() {
+    const id = this.state.currentId;
+    this.setState({ view: 'shelf', settleId: id }, () => requestAnimationFrame(() => window.scrollTo(0, this.shelfScroll || 0)));
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    this.timers.push(setTimeout(() => this.setState({ settleId: null }), 700));
+  }
+  open(g, e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    this.shelfScroll = window.scrollY;
+    const go = () => { location.hash = '#/jogo/' + g.id; this.setState({ view: 'detail', currentId: g.id }); window.scrollTo(0, 0); };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return go();
+    let tw = Math.min(380, innerWidth * 0.55), th = tw * g.h / g.w;
+    if (th > innerHeight * 0.5) { th = innerHeight * 0.5; tw = th * g.w / g.h; }
+    const to = { x: (innerWidth - tw) / 2, y: (innerHeight - th) / 2 - 10, w: tw, h: th };
+    const from = { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
+    const set = (phase) => this.setState(s => ({ anim: s.anim && { ...s.anim, phase } }));
+    this.setState({ anim: { from, to, phase: 0, g }, hiddenId: g.id });
+    requestAnimationFrame(() => requestAnimationFrame(() => set(1)));
+    this.timers.push(setTimeout(() => set(2), 850));
+    this.timers.push(setTimeout(() => set(3), 1450));
+    this.timers.push(setTimeout(() => { go(); set(4); }, 1950));
+    this.timers.push(setTimeout(() => this.setState({ anim: null, hiddenId: null }), 2450));
+  }
+  buildAnim() {
+    const a = this.state.anim; if (!a) return null;
+    const h = React.createElement, { from, to, phase, g } = a;
+    const D = Math.round(Math.min(to.w, to.h) * 0.22), ease = 'cubic-bezier(.2,.8,.2,1)';
+    const dx = (from.x + from.w / 2) - (to.x + to.w / 2), dy = (from.y + from.h / 2) - (to.y + to.h / 2), s = from.w / to.w;
+    const moverT = phase === 0 ? `translate3d(${dx}px,${dy}px,0) scale(${s}) rotateX(0deg) rotateZ(0deg)`
+      : phase >= 3 ? `translate3d(0px,60px,0) scale(1) rotateX(34deg) rotateZ(-4deg)`
+      : `translate3d(0px,0px,0) scale(1) rotateX(56deg) rotateZ(-12deg)`;
+    const wall = (st) => h('div', { style: { position: 'absolute', background: 'var(--color-accent-200)', border: '1px solid var(--color-accent-500)', backfaceVisibility: 'visible', ...st } });
+    const corners = ['tl', 'tr', 'bl', 'br'].map(c => h('i', { key: c, className: 'corner ' + c }));
+    const fs = Math.max(18, to.w * 0.075);
+    return h('div', { style: { position: 'fixed', inset: 0, zIndex: 50, perspective: '1400px', pointerEvents: phase >= 4 ? 'none' : 'auto', background: phase >= 1 && phase < 4 ? 'color-mix(in srgb, var(--color-bg) 90%, transparent)' : 'transparent', backdropFilter: phase >= 1 && phase < 4 ? 'blur(3px)' : 'none', transition: 'background 500ms, backdrop-filter 500ms' } },
+      h('div', { style: { position: 'absolute', left: to.x, top: to.y, width: to.w, height: to.h, transformStyle: 'preserve-3d', transform: moverT, opacity: phase >= 4 ? 0 : 1, transition: phase === 0 ? 'none' : `transform 800ms ${ease}, opacity 450ms ease` } },
+        h('div', { style: { position: 'absolute', inset: 0, transformStyle: 'preserve-3d', transform: `translateZ(${-D}px)` } },
+          h('div', { style: { position: 'absolute', inset: 0, background: 'var(--color-accent-100)', border: '1px solid var(--color-accent-500)', boxShadow: '0 40px 80px color-mix(in srgb, #2b2b2d 30%, transparent), inset 0 0 30px color-mix(in srgb, var(--color-accent-800) 25%, transparent)' } }),
+          wall({ left: 0, top: to.h, width: to.w, height: D, transformOrigin: 'top', transform: 'rotateX(90deg)', background: 'var(--color-accent-300)' }),
+          wall({ left: 0, top: -D, width: to.w, height: D, transformOrigin: 'bottom', transform: 'rotateX(-90deg)' }),
+          wall({ left: -D, top: 0, width: D, height: to.h, transformOrigin: 'right', transform: 'rotateY(90deg)' }),
+          wall({ left: to.w, top: 0, width: D, height: to.h, transformOrigin: 'left', transform: 'rotateY(-90deg)', background: 'var(--color-accent-300)' }),
+          h('div', { className: 'blueprint', style: { position: 'absolute', inset: '9%', background: 'var(--color-bg)', boxShadow: 'var(--shadow-md)', padding: '8%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transform: phase >= 3 ? `translateZ(${D + 90}px)` : 'translateZ(2px)', transition: `transform 520ms ${ease}` } },
+            corners,
+            h('div', { style: { fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-accent-700)' } }, 'Ficha do jogo'),
+            h('div', { style: { fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: fs, lineHeight: 1.02 } }, g.title),
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, borderTop: '1px solid var(--color-divider)', paddingTop: 6 } },
+              h('span', { style: { fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-neutral-700)' } }, 'Ludopedia'),
+              h('span', { style: { fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: fs * 0.9, color: 'var(--color-accent-700)' } }, this.fmt(g.rating))))
+        ),
+        h('div', { style: { position: 'absolute', inset: 0, background: 'var(--color-surface)', border: '1px solid var(--color-neutral-500)', boxShadow: phase >= 2 ? '0 30px 60px color-mix(in srgb, #2b2b2d 25%, transparent)' : 'none',
+          transform: phase >= 2 ? `translate3d(70%,-55%,${D + 240}px) rotateZ(24deg) rotateX(-16deg)` : 'translate3d(0,0,1px) rotateZ(0deg) rotateX(0deg)',
+          opacity: phase >= 3 ? 0 : 1, transition: `transform 700ms ${ease}, opacity 380ms ease 120ms, box-shadow 400ms` } },
+          h('image-slot', { id: 'cover-' + g.id, src: g.cover || undefined, shape: 'rect', placeholder: g.title, style: { position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' } }))
+      ));
+  }
+  coverUrl(v) { v = (v || '').trim(); return /^\d+$/.test(v) ? `https://storage.googleapis.com/ludopedia-capas/${v}_m.jpg` : v; }
+  fmt(r) { return r == null || r === '' || isNaN(r) ? '—' : Number(r).toFixed(1).replace('.', ','); }
+  blankForm(g) {
+    g = g || {};
+    return { cover: g.cover || '', title: g.title || '', kind: g.kind || 'base', dest: g.wish ? 'desejos' : (this.state.tab === 'desejos' && !g.id ? 'desejos' : 'colecao'), rating: g.rating ?? '', genres: (g.genres || []).join(', '), minP: g.minP ?? '', maxP: g.maxP ?? '', time: g.time || '', year: g.year ?? '', designer: g.designer || '', publisher: g.publisher || '', synopsis: g.synopsis || '', objetivo: g.rules?.objetivo || '', turno: (g.rules?.turno || []).join('\n'), fim: g.rules?.fim || '' };
+  }
+  saveDialog() {
+    const { dialog, games } = this.state, f = dialog.form;
+    const num = (v) => v === '' || v == null ? null : Number(v);
+    const old = dialog.id ? games.find(x => x.id === dialog.id) : null;
+    const isExp = f.kind === 'expansao';
+    const g = { ...(old || {}), id: old ? old.id : f.title.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36),
+      cover: this.coverUrl(f.cover), title: f.title.trim(), kind: f.kind, wish: f.dest === 'desejos', rating: num(f.rating), genres: f.genres.split(',').map(s => s.trim()).filter(Boolean),
+      minP: num(f.minP), maxP: num(f.maxP), time: f.time, year: num(f.year), designer: f.designer, publisher: f.publisher, synopsis: f.synopsis,
+      rules: { objetivo: f.objetivo, turno: f.turno.split('\n').map(s => s.trim()).filter(Boolean), fim: f.fim },
+      w: old ? old.w : (isExp ? 16 : 26), h: old ? old.h : (isExp ? 16 : 26) };
+    this.save(old ? games.map(x => x.id === old.id ? g : x) : [...games, g]);
+    this.setState({ dialog: null });
+  }
+  renderVals() {
+    const S = this.state, games = S.games, scale = 5.2;
+    const ql = S.q.trim().toLowerCase();
+    let list = games.filter(g => (S.tab === 'desejos') === !!g.wish)
+      .filter(g => !S.genre || (g.genres || []).includes(S.genre))
+      .filter(g => !ql || [g.title, g.designer, g.publisher, ...(g.genres || [])].join(' ').toLowerCase().includes(ql));
+    const byName = (a, b) => a.title.localeCompare(b.title, 'pt');
+    list.sort(S.sort === 'nota' ? (a, b) => (b.rating || 0) - (a.rating || 0) || byName(a, b)
+      : S.sort === 'jog' ? (a, b) => (b.maxP || 0) - (a.maxP || 0) || (a.minP || 0) - (b.minP || 0) || byName(a, b) : byName);
+    const avail = Math.max(200, S.width - 30 - 40), gap = 14;
+    const rows = []; let cur = [], used = 0;
+    list.forEach(g => {
+      const wpx = Math.round((g.w || 26) * scale), hpx = Math.round((g.h || 26) * scale);
+      if (cur.length && used + gap + wpx > avail) { rows.push({ items: cur }); cur = []; used = 0; }
+      used += (cur.length ? gap : 0) + wpx;
+      cur.push({ id: g.id, cover: g.cover || '', title: g.title, short: g.title.replace(/\s*\(.*\)$/, '').replace(/:.*$/, ''), wpx, hpx, slotId: 'cover-' + g.id, isExp: g.kind === 'expansao',
+        op: S.hiddenId === g.id ? 0 : 1, anim: S.settleId === g.id ? 'settle 600ms cubic-bezier(.2,.8,.2,1)' : 'none', open: (e) => this.open(g, e) });
+    });
+    if (cur.length) rows.push({ items: cur });
+    const genreSet = [...new Set(games.flatMap(g => g.genres || []))].sort((a, b) => a.localeCompare(b, 'pt'));
+    const col = games.filter(g => !g.wish), wishCount = games.length - col.length;
+    const nb = col.filter(g => g.kind !== 'expansao').length, ne = col.length - nb;
+
+    const g = games.find(x => x.id === S.currentId);
+    let d = {};
+    if (g) {
+      const base = g.baseId && games.find(x => x.id === g.baseId);
+      const exps = games.filter(x => x.baseId === g.id);
+      d = { cover: g.cover || '', ludoHref: 'https://www.google.com/search?q=' + encodeURIComponent('site:ludopedia.com.br/jogo ' + g.title), title: g.title, slotId: 'cover-' + g.id, aspect: `${g.w || 26} / ${g.h || 26}`, dropText: 'Arraste aqui a capa de ' + g.title, isExp: g.kind === 'expansao', wish: !!g.wish,
+        genres: g.genres || [], byline: [g.designer && g.designer !== '—' ? g.designer : null, g.publisher && g.publisher !== '—' ? g.publisher : null].filter(Boolean).join(' · ') || 'Designer e editora não informados',
+        hasBase: !!base, baseTitle: base?.title, baseHref: base ? '#/jogo/' + base.id : '#',
+        rating: this.fmt(g.rating), players: g.minP == null ? '—' : (g.minP === g.maxP || g.maxP == null ? `${g.minP}` : `${g.minP}–${g.maxP}`), time: g.time || '—', year: g.year || '—',
+        synopsis: g.synopsis || 'Sem sinopse cadastrada.', objetivo: g.rules?.objetivo || '—', fim: g.rules?.fim || '—',
+        turno: (g.rules?.turno || []).map((t, i) => ({ n: String(i + 1).padStart(2, '0'), text: t })),
+        hasExps: exps.length > 0, exps: exps.map(x => ({ title: x.title, href: '#/jogo/' + x.id, rating: this.fmt(x.rating) })) };
+    }
+    const setSort = (v) => () => this.setState({ sort: v });
+    const form = S.dialog?.form || {};
+    return {
+      isShelf: S.view === 'shelf', isDetail: S.view === 'detail' && !!g, d,
+      countLine: `${nb} jogos · ${ne} expansões${wishCount ? ` · ${wishCount} na lista de desejos` : ''}`, wishCount,
+      tabCol: S.tab === 'colecao', tabWish: S.tab === 'desejos',
+      toCol: () => this.setState({ tab: 'colecao' }), toWish: () => this.setState({ tab: 'desejos' }),
+      q: S.q, onQ: (e) => this.setState({ q: e.target.value }),
+      genre: S.genre, onGenre: (e) => this.setState({ genre: e.target.value }),
+      genreOptions: [{ value: '', label: 'Todos os gêneros' }, ...genreSet.map(x => ({ value: x, label: x }))],
+      sortIsNome: S.sort === 'nome', sortIsNota: S.sort === 'nota', sortIsJog: S.sort === 'jog',
+      sortNome: setSort('nome'), sortNota: setSort('nota'), sortJog: setSort('jog'),
+      shelfRef: this.shelfRef, rows, overlayPE: S.dragging ? 'none' : 'auto',
+      isEmpty: list.length === 0,
+      emptyTitle: S.tab === 'desejos' && !ql && !S.genre ? 'Lista de desejos vazia' : 'Nenhum jogo encontrado',
+      emptyText: S.tab === 'desejos' && !ql && !S.genre ? 'Marque jogos com wish:true no games-data.js para aparecerem aqui.' : 'Tente outro termo de busca ou remova o filtro de gênero.',
+      goBack: () => this.back(),
+      openEdit: () => this.setState({ dialog: { id: g.id, form: this.blankForm(g) } }),
+      removeGame: () => { if (confirm(`Remover “${g.title}” da estante?`)) { this.back(); this.save(games.filter(x => x.id !== g.id)); } },
+      moveToCol: () => this.save(games.map(x => x.id === g.id ? { ...x, wish: false } : x)),
+      openAdd: () => this.setState({ dialog: { id: null, form: this.blankForm() } }),
+      hasDialog: !!S.dialog, dialogTitle: S.dialog?.id ? 'Editar jogo' : 'Adicionar jogo', form,
+      onField: (e) => { const k = e.target.dataset.field, v = e.target.value; this.setState(s => ({ dialog: { ...s.dialog, form: { ...s.dialog.form, [k]: v } } })); },
+      closeDialog: () => this.setState({ dialog: null }),
+      closeDialogBg: (e) => { if (e.target === e.currentTarget) this.setState({ dialog: null }); },
+      saveDialog: () => this.saveDialog(), cantSave: !(form.title || '').trim(),
+      animEl: this.buildAnim()
+    };
+  }
+}
+</script>
+</body>
+</html>
